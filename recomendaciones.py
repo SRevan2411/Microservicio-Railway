@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_recommenders as tfrs
+import os
 
 #Leer los datos del dataset
 #Calificaciones
@@ -101,3 +102,21 @@ index.index_from_dataset(
 # Get recommendations.
 _, titles = index(tf.constant(["42"]))
 print(f"Recommendations for user 42: {titles[0, :3]}")
+
+
+#Exportar el modelo, con un archivo temporal (solo para pruebas)
+'''
+with tempfile.TemporaryDirectory() as tmp:
+  path = os.path.join(tmp,"model")
+  #guardamos el index (el que creamos con BruteForce)
+  tf.saved_model.save(index,path)
+  #Cargarlo de vuelta
+  loaded = tf.saved_model.load(path)
+  #Prediccion
+  scores,titles = loaded(["42"])
+  print(f"Recommendations for user 42: {titles[0, :3]}")
+'''
+
+#Exportar el modelo en un archivo local
+path = os.path.join(os.getcwd(),"modelo")
+tf.saved_model.save(index,path)
