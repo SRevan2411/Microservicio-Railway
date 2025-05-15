@@ -118,5 +118,5 @@ with tempfile.TemporaryDirectory() as tmp:
 '''
 
 #Exportar el modelo en un archivo local
-path = os.path.join(os.getcwd(),"modelo")
+path = os.path.join(os.getcwd(),"APITensorflow\modelo")
 tf.saved_model.save(index,path)
