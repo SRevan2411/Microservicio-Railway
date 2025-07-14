@@ -10,6 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+#la siguiente linea NO ES PARTE DEL CODIGO
+#uvicorn main:app --reload --port 8001
+#comando para prender el servidor 
+
 #Agregar el cors para que no nos bloquee los fetch del react
 app.add_middleware(
     CORSMiddleware,
@@ -50,3 +54,4 @@ def recomendar_videos(id_usuario:str):
         return {"recomendaciones":recomendaciones}
     except Exception as e:
         raise HTTPException(status_code=500,detail=f"Error al generar recomendaciones: {str(e)}")
+    
