@@ -6,8 +6,18 @@ import tensorflow_datasets as tfds
 import tensorflow_recommenders as tfrs
 import os
 import requests
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+#Agregar el cors para que no nos bloquee los fetch del react
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # O usa ["*"] para permitir todos los orígenes (solo en desarrollo)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 videos_url = "http://127.0.0.1:8000/api/usuarios/train/request/videos/get/all"
 videos_data = requests.get(videos_url).json()
