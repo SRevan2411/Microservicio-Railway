@@ -29,6 +29,11 @@ diccionario_videos = {video['id']: video for video in videos_data}
 #Ruta donde se guarda el modelo de la red neuronal, la carpueta pues xd
 path = "modelo_guardado"
 
+def refreshDictionary ():
+    videos_url = "http://127.0.0.1:8000/api/usuarios/train/request/videos/get/all"
+    videos_data = requests.get(videos_url).json()
+    diccionario_videos = {video['id']: video for video in videos_data}
+
 #Loaded es el modelo cargado
 loaded = tf.saved_model.load(path)
 # Parte de la api, vamos a usar un get
@@ -42,6 +47,7 @@ def recomendar_videos(id_usuario:str):
         predicted_ids_int = [int(x) for x in titles_np[0]]
         recomendaciones = []
         print(predicted_ids_int)
+        refreshDictionary()
         for video_id in predicted_ids_int:
             if video_id in diccionario_videos:
                 video = diccionario_videos[video_id]
