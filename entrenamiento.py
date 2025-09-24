@@ -7,8 +7,8 @@ import os
 import requests
 
 #urls de django
-history_url = "http://127.0.0.1:8000/api/usuarios/train/request/history/get/all"
-videos_url = "http://127.0.0.1:8000/api/usuarios/train/request/videos/get/all"
+history_url = "http://web:8000/api/usuarios/train/request/history/get/all"
+videos_url = "http://web:8000/api/usuarios/train/request/videos/get/all"
 
 #Parte para hacerle el fetch a django
 history_data = requests.get(history_url).json()
@@ -92,17 +92,21 @@ model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
 cached_train = train.batch(8192).cache()
 cached_test = test.batch(4096).cache()
 
-model.fit(cached_train, epochs=3)
+model.fit(cached_train, epochs=5)
 model.evaluate(cached_test, return_dict=True)
 
 # Índice de recomendación
 index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+dataset_for_index = tf.data.Dataset.zip((videos.batch(100), videos.batch(100).map(video_model)))
 index.index_from_dataset(
     tf.data.Dataset.zip((videos.batch(100), videos.batch(100).map(video_model)))
 )
 
-# Get recommendations.
-_, titles = index(tf.constant(["7"]))
+num_videos_index = sum(1 for _ in dataset_for_index.unbatch())
+valor_K = num_videos_index
+
+# Prueba para ver si si recomienda 
+_, titles = index(tf.constant(["7"]),k=valor_K)
 print(f"Recommendations for user 7: {titles[0, :3]}")
 
 # Guardar modelo

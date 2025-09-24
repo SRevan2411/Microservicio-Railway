@@ -1,0 +1,12 @@
+services:
+  recommender:
+    build: .
+    container_name: recommender_container
+    ports:
+      - "8001:8001"
+    networks:
+      - myapp-network
+
+networks:
+  myapp-network:
+    external: true
