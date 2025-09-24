@@ -7,8 +7,8 @@ import os
 import requests
 
 #urls de django
-history_url = "http://web:8000/api/usuarios/train/request/history/get/all"
-videos_url = "http://web:8000/api/usuarios/train/request/videos/get/all"
+history_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios/train/request/history/get/all"
+videos_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios/train/request/videos/get/all"
 
 #Parte para hacerle el fetch a django
 history_data = requests.get(history_url).json()

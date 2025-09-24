@@ -17,20 +17,20 @@ app = FastAPI()
 #Agregar el cors para que no nos bloquee los fetch del react
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # O usa ["*"] para permitir todos los orígenes (solo en desarrollo)
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-videos_url = "http://web:8000/api/usuarios/train/request/videos/get/all"
+videos_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios/train/request/videos/get/all"
 videos_data = requests.get(videos_url).json()
 diccionario_videos = {video['id']: video for video in videos_data}
 #Ruta donde se guarda el modelo de la red neuronal, la carpueta pues xd
 path = "modelo_guardado"
 
 def refreshDictionary ():
-    videos_url = "http://web:8000/api/usuarios/train/request/videos/get/all"
+    videos_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios/train/request/videos/get/all"
     videos_data = requests.get(videos_url).json()
     diccionario_videos = {video['id']: video for video in videos_data}
 
