@@ -27,7 +27,7 @@ videos_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios
 videos_data = requests.get(videos_url).json()
 diccionario_videos = {video['id']: video for video in videos_data}
 #Ruta donde se guarda el modelo de la red neuronal, la carpueta pues xd
-path = "modelo_guardado"
+path = "APITensorflow/modelo_guardado"
 
 def refreshDictionary ():
     videos_url = "https://django-railway-production-c5df.up.railway.app/api/usuarios/train/request/videos/get/all"
