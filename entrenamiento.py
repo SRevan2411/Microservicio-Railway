@@ -39,9 +39,9 @@ shuffled = history.shuffle(total_datos, seed=42, reshuffle_each_iteration=False)
 train = shuffled.take(tam_entrenamiento)
 test = shuffled.skip(tam_entrenamiento)
 
-#Crear vocabularios para usuarios y peliculas
+#Crear vocabularios para usuarios y videos
 user_ids = history.map(lambda x:x["user"])
-video_ids = train.map(lambda x: x["video"])
+video_ids = history.map(lambda x: x["video"])
 
 
 user_ids_list = []
@@ -55,7 +55,7 @@ unique_user_ids = np.unique(user_ids_list)
 unique_video_ids = np.unique(video_ids_list)
 
 # Modelos de embedding
-embedding_dimension = 32
+embedding_dimension = 8
 
 user_model = tf.keras.Sequential([
     tf.keras.layers.StringLookup(vocabulary=unique_user_ids, mask_token=None),
@@ -87,23 +87,29 @@ class VideoRecModel(tfrs.Model):
 
 # Compilar y entrenar
 model = VideoRecModel(user_model, video_model)
-model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1))
+model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.005))
 
-cached_train = train.batch(8192).cache()
-cached_test = test.batch(4096).cache()
+cached_train = train.batch(16).cache()
+cached_test = test.batch(16).cache()
 
-model.fit(cached_train, epochs=5)
+model.fit(cached_train, epochs=6)
 model.evaluate(cached_test, return_dict=True)
 
 # Índice de recomendación
+
+'''
 index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
 dataset_for_index = tf.data.Dataset.zip((videos.batch(100), videos.batch(100).map(video_model)))
 index.index_from_dataset(
     tf.data.Dataset.zip((videos.batch(100), videos.batch(100).map(video_model)))
 )
 
-num_videos_index = sum(1 for _ in dataset_for_index.unbatch())
-valor_K = num_videos_index
+'''
+index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+index.index_from_dataset(videos.batch(len(videos_data)).map(lambda x: (x, video_model(x))))
+
+
+valor_K = 10
 
 # Prueba para ver si si recomienda 
 _, titles = index(tf.constant(["7"]),k=valor_K)
@@ -113,4 +119,40 @@ print(f"Recommendations for user 7: {titles[0, :3]}")
 path = os.path.join(os.getcwd(),"APITensorflow\modelo_guardado")
 tf.saved_model.save(index,path)
 print(f"Modelo guardado en: {path}")
+
+
+
+
+# Número de recomendaciones a evaluar (por ejemplo, top-10)
+K = 5
+
+# Crear el índice para generar recomendaciones
+index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+index.index_from_dataset(videos.batch(100).map(lambda x: (x, video_model(x))))
+
+# Obtener predicciones y verdad real
+true_videos = []
+pred_videos = []
+
+for example in test:
+    user_id = example["user"].numpy().decode("utf-8")
+    true_video = example["video"].numpy().decode("utf-8")
+
+    # Obtener las K recomendaciones para el usuario
+    _, recommended = index(tf.constant([user_id]), k=K)
+
+    true_videos.append(true_video)
+    pred_videos.append([vid.numpy().decode("utf-8") for vid in recommended[0]])
+
+# Calcular métricas
+aciertos = sum(true_videos[i] in pred_videos[i] for i in range(len(true_videos)))
+total = len(true_videos)
+
+precision_at_k = aciertos / (total * K)
+recall_at_k = aciertos / total
+error_rate = 1 - recall_at_k
+
+print(f"Precision@{K}: {precision_at_k:.4f}")
+print(f"Recall@{K}: {recall_at_k:.4f}")
+print(f"Error rate: {error_rate:.4f}")
 
